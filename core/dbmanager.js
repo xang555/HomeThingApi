@@ -8,6 +8,7 @@ var firebasemanager = require('./firebase/firebasemanager')();
 
 function dbmanager() {
 
+    /*admin add device*/
     this.adminAddSmartDevice = function (sdid,dtype) {
 
         return new promise(function (resove, reject) {
@@ -30,6 +31,7 @@ function dbmanager() {
     }
 
 
+    /*user sing up*/
     this.userSigup = function ($uid, $uname, $passwd, $lname, $fname, $email) {
 
         return new promise(function (resolve, reject) {

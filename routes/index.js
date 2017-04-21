@@ -48,7 +48,7 @@ router.post('/user/singup',function (req, res, next) {
     var email = req.body.email;
     var uid = req.body.uid;
 
-     if (! _.isEmpty(uname) && ! _.isEmpty(passwd) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email)){
+     if (! _.isEmpty(uname) && ! _.isEmpty(passwd) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email) && ! _.isEmpty(uid)){
 
 
          dbmanager.userSigup(uid,uname,passwd,lname,fname,email)
