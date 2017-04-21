@@ -23,6 +23,7 @@ router.post('/admin/device/add',expressJwt({secret: conf.jwt.PrivateKey}), funct
 
         dbmanager.adminAddSmartDevice(sdid,dtype)
             .then(function (docs) {
+
                 res.json({err : 0, message : 'add smart device successfully',qrcode : sdid});
             }).catch(function (err) {
                 console.error(err);
@@ -45,15 +46,28 @@ router.post('/user/singup',function (req, res, next) {
     var lname = req.body.lname;
     var fname = req.body.fname;
     var email = req.body.email;
-    var uid = _.random(1234567890123,9999999999999);
+    var uid = req.body.uid;
 
      if (! _.isEmpty(uname) && ! _.isEmpty(passwd) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email)){
 
 
          dbmanager.userSigup(uid,uname,passwd,lname,fname,email)
-             .then(function (token) {
+             .then(function (docs) {
 
-                 res.json({err:0,token:token});
+                 var payload = {
+                     uname : docs.uname,
+                     passwd : docs.passwd
+                 }
+
+                 jwt.sign(payload,conf.jwt.PrivateKey,{expiresIn:24*60*60},function (err, token) {
+
+                     if (err) res.status(401).json({err:1,token:""});
+
+                     res.json({err:0,token:token});
+
+                 });
+
+
 
              }).catch(function (err) {
                  console.error(err);

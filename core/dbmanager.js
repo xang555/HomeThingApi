@@ -49,15 +49,7 @@ function dbmanager() {
             var users = new model.usersmodel(docs);
 
             users.save().then(function (docs) {
-
-                firebasemanager.createCustomToken(docs.uid)
-
-                    .then(function (token) {
-                        resolve(token);
-                    }).catch(function (err) {
-                        reject(err);
-                      })
-
+                resolve(docs);
             }).catch(function (err) {
                 reject(err);
             });

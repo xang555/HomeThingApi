@@ -17,39 +17,6 @@ admin.initializeApp({
 function firebasemanager() {
 
 
-    this.createCustomToken = function (uid) {
-
-       return new promise(function (resolve, reject) {
-
-           admin.auth().createCustomToken(uid)
-               .then(function (token) {
-                    resolve(token);
-               }).catch(function (err) {
-                    reject(err);
-                });
-
-       });
-
-    }
-
-
-    this.verifyCustomtoken = function (token) {
-
-       return new promise(function (resolve, reject) {
-
-           admin.auth().verifyIdToken(token)
-               .then(function (detoken) {
-                   resolve(detoken);
-               })
-               .catch(function (err) {
-                    reject(err);
-               })
-
-       });
-
-    }
-
-
 
 }
 
