@@ -9,7 +9,6 @@ var schema = mongose.Schema;
 var smartdevice = new schema( {
     sdid: String,
     type: String,
-    qrcode: String,
     regis: {type : Boolean , default : false}
 });
 

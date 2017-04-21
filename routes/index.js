@@ -7,7 +7,7 @@ var jwt = require('jsonwebtoken');
 var  conf = require('../config')();
 var expressJwt = require('express-jwt');
 var dbmanager = require('../core/dbmanager')();
-
+var _ = require('lodash');
 
 /* add smart device for admin only */
 router.post('/admin/device/add',expressJwt({secret: conf.jwt.PrivateKey}), function(req, res, next) {
@@ -18,21 +18,20 @@ router.post('/admin/device/add',expressJwt({secret: conf.jwt.PrivateKey}), funct
 
     var sdid = req.body.sdid;
     var  dtype = req.body.dtype;
-    var qrcode = req.body.qr;
 
-    if (sdid.length > 0 || dtype.length > 0 || qrcode.length > 0 ){
+    if (! _.isEmpty(sdid) && ! _.isEmpty(dtype)){
 
-        dbmanager.adminAddSmartDevice(sdid,dtype,qrcode)
-            .then(function () {
-                res.json({err : 0, message : 'add smart device successfully',qrcode : qrcode});
+        dbmanager.adminAddSmartDevice(sdid,dtype)
+            .then(function (docs) {
+                res.json({err : 0, message : 'add smart device successfully',qrcode : sdid});
             }).catch(function (err) {
                 console.error(err);
-            res.status(403).json({err : 1, message : 'add smart device unsuccessfully',qrcode : qrcode});
+            res.status(403).json({err : 1, message : 'add smart device unsuccessfully',qrcode : sdid});
             });
 
     }else {
         // if empty data
-        res.status(403).json({err : 1, message : 'empty device information'});
+        res.status(403).json({err : 1, message : 'empty some device information'});
     }
 
 });
@@ -40,6 +39,34 @@ router.post('/admin/device/add',expressJwt({secret: conf.jwt.PrivateKey}), funct
 
 /* user sign up */
 router.post('/user/singup',function (req, res, next) {
+
+    var uname = req.body.uname;
+    var passwd = req.body.passwd;
+    var lname = req.body.lname;
+    var fname = req.body.fname;
+    var email = req.body.email;
+    var uid = _.random(1234567890123,9999999999999);
+
+     if (! _.isEmpty(uname) && ! _.isEmpty(passwd) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email)){
+
+
+         dbmanager.userSigup(uid,uname,passwd,lname,fname,email)
+             .then(function (token) {
+
+                 res.json({err:0,token:token});
+
+             }).catch(function (err) {
+                 console.error(err);
+                res.status(401).json({err:1,token:""});
+                });
+
+
+     }else {
+
+         res.status(501).json({err:1,msg : ' empty user information ',token:""});
+
+     }
+
 
 });
 
