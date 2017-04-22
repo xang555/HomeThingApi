@@ -8,7 +8,7 @@ var schema = mongose.Schema;
 
 var smartdevice = new schema( {
     sdid: String,
-    type: String,
+    type: Number,
     regis: {type : Boolean , default : false}
 });
 

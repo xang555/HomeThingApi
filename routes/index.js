@@ -8,9 +8,12 @@ var  conf = require('../config')();
 var expressJwt = require('express-jwt');
 var dbmanager = require('../core/dbmanager')();
 var _ = require('lodash');
+var fcm = require('node-gcm');
+
+
 
 /* add smart device for admin only */
-router.post('/admin/device/add',expressJwt({secret: conf.jwt.PrivateKey}), function(req, res, next) {
+router.post('/admin/device/add',expressJwt({secret: conf.jwt.AdminPrivateKey}), function(req, res, next) {
 
     if (!req.user.uadmin) {
         return res.json({err:401,msg : 'authentication unsuccessfully'});
@@ -23,7 +26,6 @@ router.post('/admin/device/add',expressJwt({secret: conf.jwt.PrivateKey}), funct
 
         dbmanager.adminAddSmartDevice(sdid,dtype)
             .then(function (docs) {
-
                 res.json({err : 0, message : 'add smart device successfully',qrcode : sdid});
             }).catch(function (err) {
                 console.error(err);
@@ -55,18 +57,16 @@ router.post('/user/singup',function (req, res, next) {
              .then(function (docs) {
 
                  var payload = {
-                     uname : docs.uname,
-                     passwd : docs.passwd
+                    uid : uid
                  }
 
-                 jwt.sign(payload,conf.jwt.PrivateKey,{expiresIn:24*60*60},function (err, token) {
+                 jwt.sign(payload,conf.jwt.userPrivateKey,{expiresIn:24*60*60},function (err, token) {
 
                      if (err) res.status(401).json({err:1,token:""});
 
                      res.json({err:0,token:token});
 
                  });
-
 
 
              }).catch(function (err) {
@@ -76,9 +76,7 @@ router.post('/user/singup',function (req, res, next) {
 
 
      }else {
-
          res.status(501).json({err:1,msg : ' empty user information ',token:""});
-
      }
 
 
@@ -86,6 +84,33 @@ router.post('/user/singup',function (req, res, next) {
 
 /* user login */
 router.post('/user/login',function (req, res, next) {
+
+    var uid = req.body.uid;
+
+    dbmanager.userlogin(uid).then(function (user) {
+
+        console.log(user);
+
+        if (!user) res.status(401).json({err:1,token:""});
+
+        var payload = {
+            uid : uid
+        }
+
+        jwt.sign(payload,conf.jwt.userPrivateKey,{expiresIn:24*60*60},function (err, token) {
+
+            if (err) res.status(401).json({err:1,token:""});
+
+            res.json({err:0,token:token});
+
+        });
+
+
+    }).catch(function (err) {
+        console.log(err);
+        res.status(401).json({err:1,token:""});
+    });
+
 
 });
 
@@ -104,7 +129,7 @@ router.post('/admin/login',function (req, res, next) {
             padmin : passwd
         }
 
-        jwt.sign(payload,conf.jwt.PrivateKey,{expiresIn:24*60*60},function (err, token) {
+        jwt.sign(payload,conf.jwt.AdminPrivateKey,{expiresIn:24*60*60},function (err, token) {
 
             if (err) {
                 return res.status(300).json({err : 1 , token : ""});
@@ -122,7 +147,21 @@ router.post('/admin/login',function (req, res, next) {
 
 
 /* application add smart device */
-router.post('/app/device/add',function (req, res, next) {
+router.post('/app/device/add',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
+
+    var $sdid = req.body.sdid;
+
+    if (_.isEmpty($sdid)) return res.status(501).json({err : 1 , msg : 'empty device identify'});
+
+    if (!req.user.uid) {
+        return res.json({err:401,msg : 'authentication unsuccessfully'});
+    }
+
+    dbmanager.UserAddSmartDevice($sdid,req.user.uid).then(function (device) {
+        res.json(device);
+    }).catch(function (err) {
+        res.status(301).json({err : 1 , msg : err});
+    });
 
 });
 
@@ -130,19 +169,42 @@ router.post('/app/device/add',function (req, res, next) {
 router.post('/fcm',function (req, res, next) {
 
 
+
 });
 
 
 /* delete smart device */
-router.post('/device/delete',function (req, res, next) {
+router.post('/user/device/delete',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
 
+    if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
+
+    var $sdid = req.body.sdid;
+
+    if (_.isEmpty($sdid)) return res.status(501).json({err : 1 , msg : 'empty device identify'});
+
+    dbmanager.userDeleteSmartDevice(req.user.uid, $sdid).then(function (user) {
+        res.json({err: 0 , msg: 'delete user successfully'});
+    }).catch(function (err) {
+        res.status(405).json({err: 1 , msg : err});
+    });
 
 });
 
 
 /* get list of smart device for some users */
-router.get('device/{token}',function (req, res, next) {
+router.get('/device',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
 
+    if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
+
+      dbmanager.ListUserSmartDevice(req.user.uid).then(function (devices) {
+
+          if (_.isEmpty(devices)) return res.status(403).json({err: 404,msg : "no device register"});
+
+          res.json({err : 0 , devices : devices});
+
+      }).catch(function (err) {
+         res.status(403).json({err:500,msg : err});
+      });
 
 });
 
