@@ -168,8 +168,14 @@ function dbmanager() {
 
             if (!userdoc)  return reject({errmsg : 'user not found'});
 
-           userdoc.device.remove({sdid : $sdid}).then(function (newuser) {
-               resolve(newuser);
+           userdoc.device.remove({sdid : $sdid}).then(function (removeuser) {
+
+               userdoc.save().then(function (newuser) {
+                   resolve(newuser);
+               }).catch(function (err) {
+                   reject(err);
+               });
+
            }).catch(function (err) {
                reject(err);
            });
