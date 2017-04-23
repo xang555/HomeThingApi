@@ -30,6 +30,10 @@ function homethingConfig() {
         userPrivateKey : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIzMzY4NTQ1Njg4NSIsImlhdCI6MTQ5MjgzMzUzNywiZXhwIjoxNDkyOTE5OTM3fQ.txsrzK94jID3ph51yl05h7Y7JImKh0yQigEDsD67pMs"
     }
 
+    this.fcm = {
+        ServerApiKey : 'AAAAT6-pZT0:APA91bEAJcuS5XVLpZ6F7HfwBqMro2u3yEgra3x61mV24SeLqcgvKb6jLpa6Pi0os9f65acnpEh0UzAPlhgzHjXY5Bg-XZJ2jZXBqi8kWQ8ACrd_U3z3Cw46RaSv5I4_mCgK2ZIt5pN_'
+    }
+
 
     this.device = {
 
@@ -110,7 +114,7 @@ function homethingConfig() {
                "alert" : {
                    "mdId" : "f62XGhMsXVg:APA91bHksqmHpCtW-KTugGfXali_kBGE-tMBHYDR3LR_kAx1RD29k-iZSkatsp3AN7YcEdBoyp4_7m62j4OAMVk5Xf0lqQaRl_tVd-R4eK9FgQuUONBzl0SiBMhtuaJ81dnkybq1XiZt"
                },
-               "links" : {
+               "SmartAlarmlinks" : {
                    "-KgNZp9ULo6PZW-XLOXl" : "797987987987"
                },
                "values" : {

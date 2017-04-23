@@ -16,19 +16,28 @@ function dbmanager() {
 
             var docs = {
                 sdid : sdid,
-                type : dtype
+                type : dtype,
+                regis : false
             }
 
-            var devices = new model.smartdevicemodel(docs);
+            var devices = model.smartdevicemodel;
 
-            devices.save().then(function (docs) {
+            devices.update({sdid : sdid},docs,{upsert:true}).then(function (update) {
 
-                firebasemanager.addDeviceStatusStruc(docs.sdid,docs.type)
-                    .then(function () {
-                        resove(docs);
-                    }).catch(function (err) {
+                console.log(update);
+
+                if (_.isEqual(update.ok,1)){
+                    firebasemanager.addDeviceStatusStruc(sdid,dtype)
+                        .then(function () {
+                            resove(docs);
+                        }).catch(function (err) {
                         reject(err);
                     });
+                }else
+                {
+                    reject({msg : 'add device fail'});
+                }
+
 
             }).catch(function (err) {
                 reject(err);
@@ -98,7 +107,7 @@ function dbmanager() {
             devices.select('sdid type regis');
             devices.exec().then(function (device) {
 
-                if (!device) reject({error : "device is null"});
+                if (!device) reject({error : "device is null "});
 
                 device.regis = true;
                 device.save().then(function (newdevice) {
@@ -161,32 +170,81 @@ function dbmanager() {
     this.userDeleteSmartDevice = function ($uid,$sdid) {
 
        return new promise(function (resolve, reject) {
-
-           var user = model.usersmodel.findOne({uid : $uid});
-
-           user.exec().then(function (userdoc) {
-
-            if (!userdoc)  return reject({errmsg : 'user not found'});
-
-           userdoc.device.remove({sdid : $sdid}).then(function (removeuser) {
-
-               userdoc.save().then(function (newuser) {
-                   resolve(newuser);
-               }).catch(function (err) {
-                   reject(err);
-               });
-
-           }).catch(function (err) {
-               reject(err);
+           var user = model.usersmodel;
+           user.update({uid : $uid},{$pull:{device:{sdid:$sdid}}},function (err, newuser) {
+               if (err) return reject(err);
+               resolve(newuser);
            });
-
-
-           }).catch(function (err) {
-            reject(err);
-           });
-
-
        });
+
+    }
+
+
+    /* admin delete smart device */
+    this.adminDeleteSmartDevice = function ($sdid) {
+
+        return new promise(function (resolve, reject) {
+
+            var smartdevice = model.smartdevicemodel;
+            
+            smartdevice.remove({sdid : $sdid}).then(function () {
+                resolve();
+            }).catch(function (err) {
+                reject(err);
+            });
+
+        });
+
+    }
+
+
+    /* admin update smart device */
+    this.adminUpdateSmartDevice = function ($sdid,$type) {
+
+        return new promise(function (resolve, reject) {
+            var smartdevice = model.smartdevicemodel;
+            smartdevice.update({sdid : $sdid},{$set:{type:$type}}).then(function (update) {
+
+                if (_.isEqual(update.ok,1)) {
+
+                    firebasemanager.addDeviceStatusStruc($sdid,$type).then(function () {
+                        resolve(update);
+                    }).catch(function (err) {
+                        reject(err);
+                    });
+
+                }else {
+                    reject({msg : 'update device fail'});
+                }
+
+
+            }).catch(function (err) {
+               reject(err);
+            });
+
+        });
+
+    }
+
+
+    /* get user information */
+    this.getUserProfile = function ($uid) {
+
+        return new promise(function (resolve, reject) {
+
+            var user = model.usersmodel.findOne({uid:$uid});
+
+            user.select('uid uname fname lname email');
+
+            user.exec().then(function (user) {
+                if (!user) return reject({msg : 'user not fount'});
+                resolve(user);
+            }).catch(function (err) {
+               reject(err);
+            });
+
+        });
+
 
     }
 
