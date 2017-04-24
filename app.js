@@ -1,28 +1,34 @@
 "use strict";
 
 var express = require('express');
-var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var index = require('./routes/index');
 var conf = require('./config')();
+var helmet = require('helmet');
 
 var app = express();
 
-
+app.use(helmet());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 mongoose.Promise = global.Promise;
-mongoose.connect(conf.database.url,function (error) {
 
-  if (!error){
-    console.log("connecting ...");
-  }
+var connectionUri = conf.database.dev.url;
 
-}); // connect to database
+if (process.env.NODE_ENV === 'production'){
+ connectionUri = "mongodb://"+conf.database.product.user+":"+conf.database.product.passwd+"@";
+ connectionUri+=conf.database.product.url+":"+conf.database.product.port+"/"+conf.database.product.dbname;
+}
+
+mongoose.connect(connectionUri).then(function () {
+    console.log('connected database!...');
+}).catch(function (err) {
+   console.error(err);
+});
 
 
 app.use('/homething', index);

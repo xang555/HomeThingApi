@@ -171,9 +171,26 @@ function dbmanager() {
 
        return new promise(function (resolve, reject) {
            var user = model.usersmodel;
-           user.update({uid : $uid},{$pull:{device:{sdid:$sdid}}},function (err, newuser) {
+           user.update({uid : $uid},{$pull:{device:{sdid:$sdid}}},function (err, update) {
+
                if (err) return reject(err);
-               resolve(newuser);
+
+               if (update.nModified === 0) return reject({errmsg : 'Smart device not fond'});
+
+               var devices = model.smartdevicemodel.findOne({sdid : $sdid,regis : true});
+               devices.exec().then(function (device) {
+
+                   device.regis = false;
+                   device.save().then(function (newdevice) {
+                       resolve(newdevice);
+                   }).catch(function (err) {
+                       reject(err);
+                   })
+
+               }).catch(function (err) {
+                   reject(err);
+               });
+
            });
        });
 

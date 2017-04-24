@@ -221,7 +221,7 @@ router.post('/fcm',function (req, res, next) {
 });
 
 
-/* delete smart device */
+/* user delete smart device */
 router.post('/user/device/delete',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
 
     if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
@@ -231,6 +231,7 @@ router.post('/user/device/delete',expressJwt({secret: conf.jwt.userPrivateKey}),
     if (_.isEmpty($sdid)) return res.status(501).json({err : 1 , msg : 'empty device identify'});
 
     dbmanager.userDeleteSmartDevice(req.user.uid, $sdid).then(function (user) {
+        console.log(user);
         res.json({err: 0 , msg: 'delete user successfully'});
     }).catch(function (err) {
         res.status(405).json({err: 1 , msg : err});
