@@ -16,7 +16,6 @@ var users = new schema(
     {
         uid: String,
         uname: String,
-        passwd: String,
         fname: String,
         lname: String,
         email: String,

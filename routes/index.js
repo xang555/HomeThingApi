@@ -116,13 +116,12 @@ router.post('/admin/device/update',expressJwt({secret: conf.jwt.AdminPrivateKey}
 router.post('/user/singup',function (req, res, next) {
 
     var uname = req.body.uname;
-    var passwd = req.body.passwd;
     var lname = req.body.lname;
     var fname = req.body.fname;
     var email = req.body.email;
     var uid = req.body.uid;
 
-    if (! _.isEmpty(uname) && ! _.isEmpty(passwd) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email) && ! _.isEmpty(uid)){
+    if (! _.isEmpty(uname) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email) && ! _.isEmpty(uid)){
 
 
         dbmanager.userSigup(uid,uname,passwd,lname,fname,email)
