@@ -124,7 +124,7 @@ router.post('/user/singup',function (req, res, next) {
     if (! _.isEmpty(uname) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email) && ! _.isEmpty(uid)){
 
 
-        dbmanager.userSigup(uid,uname,passwd,lname,fname,email)
+        dbmanager.userSigup(uid,uname,lname,fname,email)
             .then(function (docs) {
 
                 var payload = {

@@ -49,7 +49,7 @@ function dbmanager() {
 
 
     /*user sing up*/
-    this.userSigup = function ($uid, $uname, $passwd, $lname, $fname, $email) {
+    this.userSigup = function ($uid, $uname, $lname, $fname, $email) {
 
         return new promise(function (resolve, reject) {
 
@@ -57,7 +57,6 @@ function dbmanager() {
 
                 uid: $uid,
                 uname: $uname,
-                passwd: $passwd,
                 fname: $fname,
                 lname: $lname,
                 email: $email,
