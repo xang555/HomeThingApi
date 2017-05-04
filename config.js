@@ -84,10 +84,22 @@ function homethingConfig() {
                     }
                 },
                 "status" : {
-                    "L1" : 1,
-                    "L2" : 1,
-                    "L3" : 1,
-                    "L4" : 1
+                    "L1" : {
+                        "status" : 1,
+                        "ack" : 1
+                    },
+                    "L2" : {
+                        "status" : 1,
+                        "ack" : 1
+                    },
+                    "L3" : {
+                        "status" : 1,
+                        "ack" : 1
+                    },
+                    "L4" : {
+                        "status" : 1,
+                        "ack" : 1
+                    }
                 }
             },
         tempSensor : {

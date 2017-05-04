@@ -190,16 +190,16 @@ router.post('/app/device/add',expressJwt({secret: conf.jwt.userPrivateKey}),func
 
     var $sdid = req.body.sdid;
 
-    if (_.isEmpty($sdid)) return res.status(501).json({err : 1 , msg : 'empty device identify'});
+    if (_.isEmpty($sdid)) return res.status(200).json({err : 404 , msg : 'empty device identify'});
 
     if (!req.user.uid) {
         return res.json({err:401,msg : 'authentication unsuccessfully'});
     }
 
     dbmanager.UserAddSmartDevice($sdid,req.user.uid).then(function (device) {
-        res.json(device);
+        res.json({err : 200, device : device});
     }).catch(function (err) {
-        res.status(301).json({err : 1 , msg : err});
+        res.status(200).json({err : 403 , msg : err});
     });
 
 });
@@ -227,13 +227,13 @@ router.post('/user/device/delete',expressJwt({secret: conf.jwt.userPrivateKey}),
 
     var $sdid = req.body.sdid;
 
-    if (_.isEmpty($sdid)) return res.status(501).json({err : 1 , msg : 'empty device identify'});
+    if (_.isEmpty($sdid)) return res.status(200).json({err : 1 , msg : 'empty device identify'});
 
     dbmanager.userDeleteSmartDevice(req.user.uid, $sdid).then(function (user) {
         console.log(user);
         res.json({err: 0 , msg: 'delete user successfully'});
     }).catch(function (err) {
-        res.status(405).json({err: 1 , msg : err});
+        res.status(200).json({err: 1 , msg : err});
     });
 
 });
@@ -246,7 +246,7 @@ router.get('/devices',expressJwt({secret: conf.jwt.userPrivateKey}),function (re
 
       dbmanager.ListUserSmartDevice(req.user.uid).then(function (devices) {
 
-          if (_.isEmpty(devices)) return res.status(403).json({err: 404,msg : "no device register"});
+          if (_.isEmpty(devices)) return res.status(200).json({err: 404,msg : "no device register"});
 
           res.json({err : 0 , devices : devices});
 
