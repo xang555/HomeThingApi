@@ -238,6 +238,25 @@ router.post('/user/device/delete',expressJwt({secret: conf.jwt.userPrivateKey}),
 
 });
 
+/*user update device*/
+router.post('/user/device/update',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
+
+    if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
+
+    var $sdid = req.body.sdid;
+    var $nicname = req.body.dname;
+
+    if (_.isEmpty($sdid) || _.isEmpty($nicname)) return res.status(200).json({err : 1 , msg : 'empty device identify'});
+
+     dbmanager.userUpdateSmartDevice(req.user.uid,$sdid,$nicname)
+         .then(function (update) {
+             console.log(update);
+             res.json({err : 0, msg : 'update device success'});
+         }).catch(function (err) {
+            res.json({err:1,msg : err});
+         });
+
+});
 
 /* get list of smart device for some users */
 router.get('/devices',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {

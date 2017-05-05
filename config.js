@@ -100,7 +100,14 @@ function homethingConfig() {
                         "status" : 1,
                         "ack" : 1
                     }
+                },
+                "name":{
+                    "L1":"Switch One",
+                    "L2":"Switch Two",
+                    "L3":"Switch Three",
+                    "L4":"Switch Four"
                 }
+
             },
         tempSensor : {
             "active" : {

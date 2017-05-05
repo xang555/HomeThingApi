@@ -14,9 +14,27 @@ function dbmanager() {
 
         return new promise(function (resove, reject) {
 
+            var nicname = "";
+            switch (parseInt(dtype)){
+                case 0:
+                    nicname = "Smart Switch";
+                    break;
+                case 1 :
+                    nicname = "Temp and Humi";
+                    break;
+                case 2 :
+                    nicname = "Gas Sensor";
+                    break;
+                case 3 :
+                    nicname = "Smart Alarm";
+                    break;
+
+            }
+
             var docs = {
                 sdid : sdid,
                 type : dtype,
+                nicname : nicname,
                 regis : false
             }
 
@@ -103,7 +121,7 @@ function dbmanager() {
         return new promise(function (resolve, reject) {
 
             var devices = model.smartdevicemodel.findOne({sdid : $sdid,regis : false});
-            devices.select('sdid type regis');
+            devices.select('sdid type nicname regis');
             devices.exec().then(function (device) {
 
                 if (!device) reject({error : "device is null "});
@@ -194,6 +212,28 @@ function dbmanager() {
        });
 
     }
+
+
+    this.userUpdateSmartDevice = function ($uid,$sdid, $dname) {
+
+      return new promise(function (resolve, reject) {
+
+          var user = model.usersmodel;
+
+          user.update({"uid" : $uid,"device.sdid" : $sdid},{"$set" : {"device.$.nicname":$dname}},function (err, update) {
+
+              if (err) return reject(err);
+              if (update.nModified === 0) return reject({errmsg : 'Smart device not fond'});
+
+              if (_.isEqual(update.ok,1)) {
+                  resolve(update);
+              }
+
+          });
+
+      });
+
+    };
 
 
     /* admin delete smart device */
