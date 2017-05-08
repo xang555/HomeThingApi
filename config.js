@@ -119,11 +119,13 @@ function homethingConfig() {
 
                     "temp" : {
                         "val" : 1490.0,
-                        "time" : 1491484423
                     },
                     "hum" : {
                         "val" : 1490.0,
-                        "time" : 1491484423
+                    },
+                    "time":{
+                        "hour":12,
+                        "minute":25
                     }
 
                 }
