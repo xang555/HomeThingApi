@@ -37,7 +37,8 @@ function homethingConfig() {
     };
 
     this.fcm = {
-        ServerApiKey : 'AAAAT6-pZT0:APA91bEAJcuS5XVLpZ6F7HfwBqMro2u3yEgra3x61mV24SeLqcgvKb6jLpa6Pi0os9f65acnpEh0UzAPlhgzHjXY5Bg-XZJ2jZXBqi8kWQ8ACrd_U3z3Cw46RaSv5I4_mCgK2ZIt5pN_'
+        ServerApiKey : 'AAAAT6-pZT0:APA91bEAJcuS5XVLpZ6F7HfwBqMro2u3yEgra3x61mV24SeLqcgvKb6jLpa6Pi0os9f65acnpEh0UzAPlhgzHjXY5Bg-XZJ2jZXBqi8kWQ8ACrd_U3z3Cw46RaSv5I4_mCgK2ZIt5pN_',
+        Auth : 'eyJ1YWRtaW4iOiJhZG1pbiIsInBhZG1pbiI6ImFkbWluIiwiaWF0IjoxNDkyNzUyOTAwLCJleHAiOjE0OTI4MzkzMDB9'
     };
 
 
@@ -143,10 +144,6 @@ function homethingConfig() {
                },
                "SmartAlarmlinks" : {
                    "-KgNZp9ULo6PZW-XLOXl" : "797987987987"
-               },
-               "values" : {
-                   "gass" : "1",
-                   "time" : 1491484423
                }
            }
        },

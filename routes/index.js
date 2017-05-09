@@ -209,6 +209,10 @@ router.post('/fcm',function (req, res, next) {
 
     var $sdid = req.body.sdid;
 
+    if(!_.isEqual(req.get('Authorization'),conf.fcm.Auth)){
+        return res.json({err : 1 , msg : 'Unionization'});
+    }
+
     if (_.isEmpty($sdid)) return res.status(403).json({err:1,msg : 'empty parameter'});
 
     firebasemanager.FcmNotification($sdid).then(function (result) {
