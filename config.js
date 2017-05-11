@@ -16,9 +16,9 @@ function homethingConfig() {
             url : "mongodb://localhost/homething"
         },
         product : {
-            url : "mongodb",
-            user : "admin",
-            passwd : "admin",
+            url : "mongohomething",
+            user : "xang",
+            passwd : "ilovemongodb",
             port : 27017,
             dbname : 'homething'
         }
