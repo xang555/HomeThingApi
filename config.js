@@ -153,7 +153,8 @@ function homethingConfig() {
              "ack" : 45,
              "uplink" : 1
          },
-          alert : false
+          alert : false,
+          link : ""
      }
 
 
