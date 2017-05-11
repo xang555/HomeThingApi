@@ -139,9 +139,7 @@ function homethingConfig() {
                "uplink" : 1
            },
            "sensor" : {
-               "alert" : {
-                   "mdId" : "f62XGhMsXVg:APA91bHksqmHpCtW-KTugGfXali_kBGE-tMBHYDR3LR_kAx1RD29k-iZSkatsp3AN7YcEdBoyp4_7m62j4OAMVk5Xf0lqQaRl_tVd-R4eK9FgQuUONBzl0SiBMhtuaJ81dnkybq1XiZt"
-               },
+               "alert" : {},
                "SmartAlarmlinks" : {
                    "-KgNZp9ULo6PZW-XLOXl" : "797987987987"
                }
