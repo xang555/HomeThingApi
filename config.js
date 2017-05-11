@@ -103,10 +103,10 @@ function homethingConfig() {
                     }
                 },
                 "name":{
-                    "L1":"Switch One",
-                    "L2":"Switch Two",
-                    "L3":"Switch Three",
-                    "L4":"Switch Four"
+                    "L1":"Switch 1",
+                    "L2":"Switch 2",
+                    "L3":"Switch 3",
+                    "L4":"Switch 4"
                 }
 
             },
@@ -119,14 +119,14 @@ function homethingConfig() {
                 "values" : {
 
                     "temp" : {
-                        "val" : 1490.0,
+                        "val" : 20.0,
                     },
                     "hum" : {
-                        "val" : 1490.0,
+                        "val" : 50.0,
                     },
                     "time":{
                         "hour":12,
-                        "minute":25
+                        "minute":0
                     }
 
                 }
@@ -139,9 +139,7 @@ function homethingConfig() {
                "uplink" : 1
            },
            "sensor" : {
-               "alert" : {
-                   "mdId" : "f62XGhMsXVg:APA91bHksqmHpCtW-KTugGfXali_kBGE-tMBHYDR3LR_kAx1RD29k-iZSkatsp3AN7YcEdBoyp4_7m62j4OAMVk5Xf0lqQaRl_tVd-R4eK9FgQuUONBzl0SiBMhtuaJ81dnkybq1XiZt"
-               },
+               "alert" : {},
                "SmartAlarmlinks" : {
                    "-KgNZp9ULo6PZW-XLOXl" : "797987987987"
                }
