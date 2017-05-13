@@ -243,8 +243,8 @@ function dbmanager() {
 
             var smartdevice = model.smartdevicemodel;
             
-            smartdevice.remove({sdid : $sdid}).then(function () {
-                resolve();
+            smartdevice.remove({sdid : $sdid}).then(function (del) {
+                resolve(del.result);
             }).catch(function (err) {
                 reject(err);
             });
@@ -259,7 +259,25 @@ function dbmanager() {
 
         return new promise(function (resolve, reject) {
             var smartdevice = model.smartdevicemodel;
-            smartdevice.update({sdid : $sdid},{$set:{type:$type}}).then(function (update) {
+
+            var nicname = "";
+            switch (parseInt($type)){
+                case 0:
+                    nicname = "Smart Switch";
+                    break;
+                case 1 :
+                    nicname = "Temp and Humi";
+                    break;
+                case 2 :
+                    nicname = "Gas Sensor";
+                    break;
+                case 3 :
+                    nicname = "Smart Alarm";
+                    break;
+
+            }
+
+            smartdevice.update({sdid : $sdid},{$set:{type:$type,nicname:nicname}}).then(function (update) {
 
                 if (_.isEqual(update.ok,1)) {
 
@@ -280,7 +298,23 @@ function dbmanager() {
 
         });
 
-    }
+    };
+
+    /*admin lists smart devices*/
+    this.adminListSmartDevices = function () {
+
+        return new promise(function (resolve, reject) {
+
+            var smartdevices = model.smartdevicemodel.find({});
+            smartdevices.exec().then(function (devices) {
+                resolve(devices);
+            }).catch(function (err) {
+                reject(err);
+            });
+
+        });
+
+    };
 
 
     /* get user information */

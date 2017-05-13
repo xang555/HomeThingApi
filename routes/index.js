@@ -46,8 +46,6 @@ router.post('/admin/login',function (req, res, next) {
     var  user = req.body.user;
     var passwd = req.body.passwd;
 
-    console.log(user + " - " + passwd);
-
     if (user === conf.admin.user && passwd === conf.admin.passwd){
 
         var payload = {
@@ -81,8 +79,14 @@ router.post('/admin/device/delete',expressJwt({secret: conf.jwt.AdminPrivateKey}
     if (_.isEmpty($sdid)) return res.status(400).json({err : 1 , msg : 'empty parameter'});
 
 
-    dbmanager.adminDeleteSmartDevice($sdid).then(function () {
-        res.json({err:0,msg:'delete smart device successfully'});
+    dbmanager.adminDeleteSmartDevice($sdid).then(function (del) {
+
+        if(del.ok == 1 && del.n == 1){
+            res.json({err:0,msg:'delete smart device successfully'});
+        }else {
+            res.json({err:1,msg:'delete smart device unsuccessfully, No smart devices'});
+        }
+
     }).catch(function (err) {
         res.status(403).json({err:1,msg:'delete smart device unsuccessfully',msgerr: err});
     });
@@ -108,6 +112,21 @@ router.post('/admin/device/update',expressJwt({secret: conf.jwt.AdminPrivateKey}
         res.status(403).json({err : 1 , msg : 'update smart device successfully',issue : err});
     });
 
+
+});
+
+/*admin List smart Devices*/
+
+router.get('/admin/devices',expressJwt({secret: conf.jwt.AdminPrivateKey}),function (req, res, next) {
+
+    if (!req.user.uadmin) {
+        return res.status(401).json({err:401,msg : 'authentication unsuccessfully'});
+    }
+     dbmanager.adminListSmartDevices().then(function (devices) {
+         res.json({err:0,devices:devices});
+     }).catch(function (err) {
+         res.json({err:1,issue:err});
+     });
 
 });
 
