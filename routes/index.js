@@ -46,6 +46,8 @@ router.post('/admin/login',function (req, res, next) {
     var  user = req.body.user;
     var passwd = req.body.passwd;
 
+    console.log(user + " - " + passwd);
+
     if (user === conf.admin.user && passwd === conf.admin.passwd){
 
         var payload = {
