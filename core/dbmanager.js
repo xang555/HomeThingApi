@@ -36,7 +36,7 @@ function dbmanager() {
                 type : dtype,
                 nicname : nicname,
                 regis : false
-            }
+            };
 
             var devices = model.smartdevicemodel;
 
@@ -235,6 +235,98 @@ function dbmanager() {
 
     };
 
+    /*user share device*/
+    this.userShareSmartDevice = function ($sdid, $pcode) {
+
+        return new promise(function (resolve, reject) {
+
+            var permiss = model.permissionmodel;
+
+            var docs = {
+                sdid : $sdid,
+                pcode : $pcode
+            };
+
+            permiss.update({sdid:$sdid},docs,{upsert: true},function (err, update) {
+
+                if (err) return reject(err);
+
+                if (_.isEqual(update.ok,1)) {
+                    resolve(update);
+                }
+
+            });
+
+        });
+
+    };
+
+
+    /*user add device by using join code*/
+    this.userjoinSmartDevice = function ($uid, $sdid, $pcode) {
+
+        return new promise(function (reolve, reject) {
+
+            var usermodel = model.usersmodel;
+
+            var user = usermodel.findOne({uid : $uid,"device.sdid" : $sdid});
+            user.exec().then(function (userdoc) {
+
+                console.log(userdoc);
+
+            if (_.isEmpty(userdoc)){
+
+                var permissionmodel = model.permissionmodel;
+
+                var permis = permissionmodel.findOne({sdid:$sdid,pcode:$pcode});
+
+                permis.exec().then(function (permis) {
+
+                if (_.isEmpty(permis)) return reject({errcode : 401 , errmsg : 'don\'t have permission'}); // no permission
+
+
+                    var devices = model.smartdevicemodel.findOne({sdid : $sdid,regis : true});
+                    devices.select('sdid type nicname regis');
+                    devices.exec().then(function (device) {
+
+                        if (!device) return reject({error : "device is null "});
+
+                        var user = model.usersmodel.findOne({uid:$uid});
+
+                        user.exec().then(function (userdoc) {
+
+                            userdoc.device.push(newdevice);
+                            userdoc.save().then(function (newuser) {
+                               return resolve(device);
+                            }).catch(function (err) {
+                              return  reject(err);
+                            });
+
+                        }).catch(function (err) {
+                           return reject(err);
+                        });
+
+                    }).catch(function (err) {
+                        return reject(err);
+                    })
+
+
+                }).catch(function (err) {
+                    return reject(err);
+                });
+
+            }else {
+                return reject({errcode : 400,errmsg:'device already'});
+            }
+
+            }).catch(function (err) {
+                reject(err);
+            });
+
+        });
+
+    };
+
 
     /* admin delete smart device */
     this.adminDeleteSmartDevice = function ($sdid) {
@@ -251,7 +343,7 @@ function dbmanager() {
 
         });
 
-    }
+    };
 
 
     /* admin update smart device */

@@ -25,6 +25,12 @@ var users = new schema(
 
 );
 
+var permission = new schema({
+    sdid:String,
+    pcode : String
+});
+
 
 exports.users = users;
 exports.smartdevice = smartdevice;
+exports.permission = permission;
