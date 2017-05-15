@@ -265,14 +265,12 @@ function dbmanager() {
     /*user add device by using join code*/
     this.userjoinSmartDevice = function ($uid, $sdid, $pcode) {
 
-        return new promise(function (reolve, reject) {
+        return new promise(function (resolve, reject) {
 
             var usermodel = model.usersmodel;
 
             var user = usermodel.findOne({uid : $uid,"device.sdid" : $sdid});
             user.exec().then(function (userdoc) {
-
-                console.log(userdoc);
 
             if (_.isEmpty(userdoc)){
 
@@ -295,7 +293,7 @@ function dbmanager() {
 
                         user.exec().then(function (userdoc) {
 
-                            userdoc.device.push(newdevice);
+                            userdoc.device.push(device);
                             userdoc.save().then(function (newuser) {
                                return resolve(device);
                             }).catch(function (err) {
