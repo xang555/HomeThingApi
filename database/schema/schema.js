@@ -10,7 +10,7 @@ var smartdevice = new schema( {
     sdid: String,
     type: Number,
     nicname : String,
-    regis: {type : Boolean , default : false}
+    sharecode : String
 });
 
 var users = new schema(
@@ -25,12 +25,5 @@ var users = new schema(
 
 );
 
-var permission = new schema({
-    sdid:String,
-    pcode : String
-});
-
-
 exports.users = users;
 exports.smartdevice = smartdevice;
-exports.permission = permission;

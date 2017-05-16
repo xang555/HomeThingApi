@@ -10,7 +10,7 @@ var _ = require('lodash');
 function dbmanager() {
 
     /*admin add device*/
-    this.adminAddSmartDevice = function (sdid,dtype) {
+    this.adminAddSmartDevice = function (sdid,$sharecode,dtype) {
 
         return new promise(function (resove, reject) {
 
@@ -35,7 +35,7 @@ function dbmanager() {
                 sdid : sdid,
                 type : dtype,
                 nicname : nicname,
-                regis : false
+                sharecode : $sharecode
             };
 
             var devices = model.smartdevicemodel;
@@ -63,7 +63,7 @@ function dbmanager() {
 
         });
 
-    }
+    };
 
 
     /*user sing up*/
@@ -113,37 +113,39 @@ function dbmanager() {
 
         });
 
-    }
+    };
 
     /* user add smart device*/
-    this.UserAddSmartDevice = function ($sdid,$uid) {
+    this.UserAddSmartDevice = function ($sdid,$sharecode,$uid) {
 
         return new promise(function (resolve, reject) {
 
-            var devices = model.smartdevicemodel.findOne({sdid : $sdid,regis : false});
-            devices.select('sdid type nicname regis');
+            var devices = model.smartdevicemodel.findOne({sdid : $sdid,sharecode : $sharecode});
+            devices.select('sdid type nicname sharecode');
             devices.exec().then(function (device) {
 
-                if (!device) reject({error : "device is null "});
+                if (!device) return reject({error : "device is null "});
 
-                device.regis = true;
-                device.save().then(function (newdevice) {
+                var user = model.usersmodel.findOne({uid:$uid,"device.sdid":$sdid});
 
-                 var user = model.usersmodel.findOne({uid:$uid});
+                user.exec().then(function (userdoc) {
 
-                 user.exec().then(function (userdoc) {
+                    if (!_.isEmpty(userdoc)) return reject({errcode : 400,errmsg:'device already'});
 
-                     userdoc.device.push(newdevice);
-                     userdoc.save().then(function (newuser) {
-                        resolve(newdevice);
-                     }).catch(function (err) {
-                         reject(err);
-                     });
+                    var newusermodel = model.usersmodel.findOne({uid:$uid});
 
-                 }).catch(function (err) {
-                    reject(err);
-                 });
+                    newusermodel.exec().then(function (newuser) {
 
+                        newuser.device.push(device);
+                        newuser.save().then(function (dcos) {
+                          resolve(device);
+                        }).catch(function (err) {
+                            reject(err);
+                        });
+
+                    }).catch(function (err) {
+                        reject(err);
+                    });
 
                 }).catch(function (err) {
                     reject(err);
@@ -157,7 +159,7 @@ function dbmanager() {
         });
 
 
-    }
+    };
 
 
     /*list of users smart devices*/
@@ -180,7 +182,7 @@ function dbmanager() {
         });
 
 
-    }
+    };
 
 
     /*user delete smart device*/
@@ -189,29 +191,13 @@ function dbmanager() {
        return new promise(function (resolve, reject) {
            var user = model.usersmodel;
            user.update({uid : $uid},{$pull:{device:{sdid:$sdid}}},function (err, update) {
-
                if (err) return reject(err);
-
                if (update.nModified === 0) return reject({errmsg : 'Smart device not fond'});
-
-               var devices = model.smartdevicemodel.findOne({sdid : $sdid,regis : true});
-               devices.exec().then(function (device) {
-
-                   device.regis = false;
-                   device.save().then(function (newdevice) {
-                       resolve(newdevice);
-                   }).catch(function (err) {
-                       reject(err);
-                   })
-
-               }).catch(function (err) {
-                   reject(err);
-               });
-
+                resolve(update);
            });
        });
 
-    }
+    };
 
 
     this.userUpdateSmartDevice = function ($uid,$sdid, $dname) {
@@ -232,96 +218,6 @@ function dbmanager() {
           });
 
       });
-
-    };
-
-    /*user share device*/
-    this.userShareSmartDevice = function ($sdid, $pcode) {
-
-        return new promise(function (resolve, reject) {
-
-            var permiss = model.permissionmodel;
-
-            var docs = {
-                sdid : $sdid,
-                pcode : $pcode
-            };
-
-            permiss.update({sdid:$sdid},docs,{upsert: true},function (err, update) {
-
-                if (err) return reject(err);
-
-                if (_.isEqual(update.ok,1)) {
-                    resolve(update);
-                }
-
-            });
-
-        });
-
-    };
-
-
-    /*user add device by using join code*/
-    this.userjoinSmartDevice = function ($uid, $sdid, $pcode) {
-
-        return new promise(function (resolve, reject) {
-
-            var usermodel = model.usersmodel;
-
-            var user = usermodel.findOne({uid : $uid,"device.sdid" : $sdid});
-            user.exec().then(function (userdoc) {
-
-            if (_.isEmpty(userdoc)){
-
-                var permissionmodel = model.permissionmodel;
-
-                var permis = permissionmodel.findOne({sdid:$sdid,pcode:$pcode});
-
-                permis.exec().then(function (permis) {
-
-                if (_.isEmpty(permis)) return reject({errcode : 401 , errmsg : 'don\'t have permission'}); // no permission
-
-
-                    var devices = model.smartdevicemodel.findOne({sdid : $sdid,regis : true});
-                    devices.select('sdid type nicname regis');
-                    devices.exec().then(function (device) {
-
-                        if (!device) return reject({error : "device is null "});
-
-                        var user = model.usersmodel.findOne({uid:$uid});
-
-                        user.exec().then(function (userdoc) {
-
-                            userdoc.device.push(device);
-                            userdoc.save().then(function (newuser) {
-                               return resolve(device);
-                            }).catch(function (err) {
-                              return  reject(err);
-                            });
-
-                        }).catch(function (err) {
-                           return reject(err);
-                        });
-
-                    }).catch(function (err) {
-                        return reject(err);
-                    })
-
-
-                }).catch(function (err) {
-                    return reject(err);
-                });
-
-            }else {
-                return reject({errcode : 400,errmsg:'device already'});
-            }
-
-            }).catch(function (err) {
-                reject(err);
-            });
-
-        });
 
     };
 

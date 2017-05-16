@@ -22,10 +22,11 @@ router.post('/admin/device/add',expressJwt({secret: conf.jwt.AdminPrivateKey}), 
 
     var sdid = req.body.sdid;
     var  dtype = req.body.dtype;
+    var sharecode = req.body.sharecode;
 
     if (! _.isEmpty(sdid) && ! _.isEmpty(dtype)){
 
-        dbmanager.adminAddSmartDevice(sdid,dtype)
+        dbmanager.adminAddSmartDevice(sdid,sharecode,dtype)
             .then(function (docs) {
                 res.json({err : 0, message : 'add smart device successfully',qrcode : sdid});
             }).catch(function (err) {
@@ -210,16 +211,18 @@ router.post('/user/login',function (req, res, next) {
 router.post('/app/device/add',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
 
     var $sdid = req.body.sdid;
+    var $sharecode = req.body.sharecode;
 
-    if (_.isEmpty($sdid)) return res.status(200).json({err : 404 , msg : 'empty device identify'});
+    if (_.isEmpty($sdid) || _.isEmpty($sharecode)) return res.status(200).json({err : 404 , msg : 'empty device identify'});
 
     if (!req.user.uid) {
         return res.json({err:401,msg : 'authentication unsuccessfully'});
     }
 
-    dbmanager.UserAddSmartDevice($sdid,req.user.uid).then(function (device) {
+    dbmanager.UserAddSmartDevice($sdid,$sharecode,req.user.uid).then(function (device) {
         res.json({err : 200, device : device});
     }).catch(function (err) {
+       if (err.errcode === 400) return res.status(200).json({err : 400 , msg : err});
         res.status(200).json({err : 403 , msg : err});
     });
 
@@ -312,53 +315,6 @@ router.get('/user/profile',expressJwt({secret: conf.jwt.userPrivateKey}),functio
 
 });
 
-
-/*share smart device*/
-router.post('/user/device/share',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
-
-    var $pcode = req.body.pcode;
-    var $sdid = req.body.sdid;
-
-    if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
-    if (_.isEmpty($pcode) || _.isEmpty($sdid))   return res.status(200).json({err: 404,msg : "parameter is empty"});
-
-    dbmanager.userShareSmartDevice($sdid,$pcode)
-        .then(function (permis) {
-            return res.status(200).json({err:0,msg:'share code successfully'});
-        }).catch(function (err) {
-             return res.status(404).json({err:1,msg:err});
-        });
-
-
-});
-
-
-/*join smart device*/
-router.post('/user/device/join',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
-
-    var $pcode = req.body.pcode;
-    var $sdid = req.body.sdid;
-
-    if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
-
-    if (_.isEmpty($pcode) || _.isEmpty($sdid))  return res.status(200).json({err: 404,msg : "parameter is empty"});
-
-    dbmanager.userjoinSmartDevice(req.user.uid,$sdid,$pcode)
-        .then(function (device) {
-            res.json({err : 200, device : device});
-        }).catch(function (err) {
-
-            if (_.isEqual(err.errcode,400)){
-                return res.status(200).json({err: 400,msg : "device already"});
-            }else if (_.isEqual(err.errcode,401)){
-                return res.status(200).json({err: 401,msg : "don't have permission"});
-            }else {
-                return res.status(405).json({err: 1,msg : err});
-            }
-
-        });
-
-});
 
 
 module.exports = router;
