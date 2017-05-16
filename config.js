@@ -140,9 +140,7 @@ function homethingConfig() {
            },
            "sensor" : {
                "alert" : {},
-               "SmartAlarmlinks" : {
-                   "-KgNZp9ULo6PZW-XLOXl" : "797987987987"
-               }
+               "SmartAlarmlinks" : {}
            }
        },
 
