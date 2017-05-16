@@ -24,7 +24,7 @@ router.post('/admin/device/add',expressJwt({secret: conf.jwt.AdminPrivateKey}), 
     var  dtype = req.body.dtype;
     var sharecode = req.body.sharecode;
 
-    if (! _.isEmpty(sdid) && ! _.isEmpty(dtype)){
+    if (! _.isEmpty(sdid) && ! _.isEmpty(dtype) && !_.isEmpty(sharecode)){
 
         dbmanager.adminAddSmartDevice(sdid,sharecode,dtype)
             .then(function (docs) {
