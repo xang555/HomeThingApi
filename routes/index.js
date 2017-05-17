@@ -308,7 +308,7 @@ router.get('/user/profile',expressJwt({secret: conf.jwt.userPrivateKey}),functio
 
     if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
     dbmanager.getUserProfile(req.user.uid).then(function (user) {
-        res.status(200).json(user);
+        res.status(200).json({err:0,user:user});
     }).catch(function (err) {
         res.status(403).json({err:1,issue : err});
     })
