@@ -11,7 +11,12 @@ var cors = require('cors');
 
 var app = express();
 
-app.use(cors());
+var corsOptions = {
+    origin: 'https://homethingadmin.xangnam.com',
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(logger('dev'));
 app.use(bodyParser.json());
