@@ -187,6 +187,6 @@ function AlertToSmartAlarm($sdid) {
 }
 
 
-module.exports = function () {
+    module.exports = function () {
     return new firebasemanager();
 }
