@@ -7,9 +7,16 @@ var mongoose = require('mongoose');
 var index = require('./routes/index');
 var conf = require('./config')();
 var helmet = require('helmet');
+var cors = require('cors');
 
 var app = express();
 
+var corsOptions = {
+    origin: 'https://homethingadmin.xangnam.com',
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(logger('dev'));
 app.use(bodyParser.json());
