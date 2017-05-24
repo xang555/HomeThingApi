@@ -1,0 +1,88 @@
+version: '3'
+services:
+  nginx-proxy:
+    image: "jwilder/nginx-proxy:latest"
+    ports:
+     - "80:80"
+     - "443:443"
+    volumes:
+     - /var/data_server/letsencrypt-nginx-proxy/certs:/etc/nginx/certs:ro
+     - /etc/nginx/vhost.d
+     - /usr/share/nginx/htm
+     - /var/run/docker.sock:/tmp/docker.sock:ro
+    restart: always
+  letsencrypt:
+    image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nginx-proxy
+      - /var/data_server/letsencrypt-nginx-proxy/certs:/etc/nginx/certs:rw
+  mongohomething:
+    image: "tutum/mongodb"
+    restart: always
+    volumes:
+     - /etc/localtime:/etc/localtime
+     - /var/data/homething/db:/data/db
+    environment:
+      - MONGODB_USER=xang
+      - MONGODB_DATABASE=homething
+      - MONGODB_PASS=ilovemongodb
+  homething:
+    image: "xang/homething:latest"
+    restart: always
+    environment:
+      - VIRTUAL_HOST=homethingapi.xangnam.com
+      - LETSENCRYPT_HOST=homethingapi.xangnam.com
+      - LETSENCRYPT_EMAIL=xang.docker@gmail.com
+    links:
+      - mongohomething:mongohomething
+  homethingbot:
+    image: "xang/homethingbot:latest"
+    restart: always
+    links:
+      - homething:homething
+  homethingadmin:
+    image: "nginx:latest"
+    restart: always
+    environment:
+      - VIRTUAL_HOST=www.homethingadmin.xangnam.com,homethingadmin.xangnam.com
+      - LETSENCRYPT_HOST=www.homethingadmin.xangnam.com,homethingadmin.xangnam.com
+      - LETSENCRYPT_EMAIL=xangnamDev@gmail.com
+    volumes:
+      - /var/data/LaoThing/homethingProd:/usr/share/nginx/html:ro
+  mongodb:
+      image: "tutum/mongodb"
+      restart: always
+      volumes:
+       - /etc/localtime:/etc/localtime
+       - /var/data/db:/data/db
+      environment:
+        - MONGODB_USER=xang
+        - MONGODB_DATABASE=homething
+        - MONGODB_PASS=ilovemongodb
+  api:
+    image: "node:latest"
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - /var/data/lotteryapi:/usr/src/app
+    command: node ./bin/www
+    links:
+      - mongodb:mongodb
+    working_dir: /usr/src/app
+  webadmin:
+    image: "node:latest"
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - /var/data/lotterywebaddmin:/usr/src/app
+    command: node ./bin/www
+    links:
+      -  api:api
+    working_dir: /usr/src/app
+
