@@ -1,26 +1,31 @@
-version: '3'
+version: '2'
 services:
   nginx-proxy:
     image: "jwilder/nginx-proxy:latest"
+    container_name: nginx-proxy
     ports:
      - "80:80"
      - "443:443"
     volumes:
      - /var/data_server/letsencrypt-nginx-proxy/certs:/etc/nginx/certs:ro
-     - nginx_proxy_data:/etc/nginx/vhost.d
-     - nginx_proxy_data:/usr/share/nginx/htm
+     - /etc/nginx/vhost.d
+     - /usr/share/nginx/htm
      - /var/run/docker.sock:/tmp/docker.sock:ro
     restart: always
   letsencrypt:
     image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
+    container_name: letsencrypt
     restart: always
     volumes:
       nginx_proxy_data:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/data_server/letsencrypt-nginx-proxy/certs:/etc/nginx/certs:rw
+    volumes_from:
+      - nginx-proxy
   mongohomething:
     image: "tutum/mongodb"
+    container_name: mongohomething
     restart: always
     volumes:
      - /etc/localtime:/etc/localtime
@@ -31,6 +36,7 @@ services:
       - MONGODB_PASS=ilovemongodb
   homething:
     image: "xang/homething:latest"
+    container_name: homething
     restart: always
     environment:
       - VIRTUAL_HOST=homethingapi.xangnam.com
@@ -40,11 +46,13 @@ services:
       - mongohomething:mongohomething
   homethingbot:
     image: "xang/homethingbot:latest"
+    container_name: homethingbot
     restart: always
     links:
       - homething:homething
   homethingadmin:
     image: "nginx:latest"
+    container_name: homethingadmin
     restart: always
     environment:
       - VIRTUAL_HOST=www.homethingadmin.xangnam.com,homethingadmin.xangnam.com
@@ -54,6 +62,7 @@ services:
       - /var/data/LaoThing/homethingProd:/usr/share/nginx/html:ro
   mongodb:
       image: "tutum/mongodb"
+      container_name: mongodb
       restart: always
       volumes:
        - /etc/localtime:/etc/localtime
@@ -64,6 +73,7 @@ services:
         - MONGODB_PASS=ilovemongodb
   api:
     image: "node:latest"
+    container_name: api
     restart: always
     ports:
       - "5000:5000"
@@ -76,6 +86,7 @@ services:
     working_dir: /usr/src/app
   webadmin:
     image: "node:latest"
+    container_name: webadmin
     restart: always
     ports:
       - "3000:3000"
