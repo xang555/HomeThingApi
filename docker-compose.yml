@@ -7,15 +7,15 @@ services:
      - "443:443"
     volumes:
      - /var/data_server/letsencrypt-nginx-proxy/certs:/etc/nginx/certs:ro
-     - /etc/nginx/vhost.d
-     - /usr/share/nginx/htm
+     - nginx_proxy_data:/etc/nginx/vhost.d
+     - nginx_proxy_data:/usr/share/nginx/htm
      - /var/run/docker.sock:/tmp/docker.sock:ro
     restart: always
   letsencrypt:
     image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
     restart: always
     volumes:
-      nginx-proxy:
+      nginx_proxy_data:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/data_server/letsencrypt-nginx-proxy/certs:/etc/nginx/certs:rw
@@ -86,4 +86,6 @@ services:
     links:
       - api:api
     working_dir: /usr/src/app
+volumes:
+  nginx_proxy_data:
 
