@@ -15,8 +15,9 @@ services:
     image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
     restart: always
     volumes:
+      nginx-proxy:
+    volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - nginx-proxy
       - /var/data_server/letsencrypt-nginx-proxy/certs:/etc/nginx/certs:rw
   mongohomething:
     image: "tutum/mongodb"
@@ -83,6 +84,6 @@ services:
       - /var/data/lotterywebaddmin:/usr/src/app
     command: node ./bin/www
     links:
-      -  api:api
+      - api:api
     working_dir: /usr/src/app
 
