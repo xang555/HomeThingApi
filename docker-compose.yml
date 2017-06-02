@@ -83,7 +83,7 @@ services:
     environment:
       - VIRTUAL_HOST=lekd.xangnam.com
       - LETSENCRYPT_HOST=lekd.xangnam.com
-      - LETSENCRYPT_EMAIL=xangnamDev@gmail.com
+      - LETSENCRYPT_EMAIL=jidtapone.docker@gmail.com
     command: node ./bin/www
     links:
       - mongodb:mongodb
@@ -100,7 +100,7 @@ services:
     environment:
       - VIRTUAL_HOST=lekdadmin.xangnam.com
       - LETSENCRYPT_HOST=lekdadmin.xangnam.com
-      - LETSENCRYPT_EMAIL=xangnamDev@gmail.com
+      - LETSENCRYPT_EMAIL=nidkmx@gmail.com
     command: node ./bin/www
     links:
       - api:api
