@@ -96,7 +96,7 @@ services:
       - 3000
     volumes:
       - /etc/localtime:/etc/localtime
-      - /var/data/lotterywebaddmin:/usr/src/
+      - /var/data/lotterywebaddmin:/usr/src/app
     environment:
       - VIRTUAL_HOST=lekdadmin.xangnam.com
       - LETSENCRYPT_HOST=lekdadmin.xangnam.com
