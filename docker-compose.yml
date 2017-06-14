@@ -76,10 +76,14 @@ services:
     container_name: api
     restart: always
     ports:
-      - "5000:5000"
+      - 5000
     volumes:
       - /etc/localtime:/etc/localtime
       - /var/data/lotteryapi:/usr/src/app
+    environment:
+      - VIRTUAL_HOST=lekd.xangnam.com
+      - LETSENCRYPT_HOST=lekd.xangnam.com
+      - LETSENCRYPT_EMAIL=jidtapone.docker@gmail.com
     command: node ./bin/www
     links:
       - mongodb:mongodb
@@ -89,10 +93,14 @@ services:
     container_name: webadmin
     restart: always
     ports:
-      - "3000:3000"
+      - 3000
     volumes:
       - /etc/localtime:/etc/localtime
       - /var/data/lotterywebaddmin:/usr/src/app
+    environment:
+      - VIRTUAL_HOST=lekdadmin.xangnam.com
+      - LETSENCRYPT_HOST=lekdadmin.xangnam.com
+      - LETSENCRYPT_EMAIL=nidkmx@gmail.com
     command: node ./bin/www
     links:
       - api:api
