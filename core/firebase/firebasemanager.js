@@ -62,44 +62,30 @@ this.FcmNotification = function ($sdid) {
 
 return new promise(function (resolve, reject) {
 
-    var sender = new fcm.Sender(conf.fcm.ServerApiKey);
-
-    var message = new fcm.Message({
-        priority: 'high',
-        contentAvailable: true,
-        delayWhileIdle: true,
-        timeToLive: 3,
-        data : {
-            title : 'Homething Platform',
-            content : 'Gas sensor detect Dangerous gas',
-            subcontent : 'warning!! this notification is important. because your gas sensor detect Dangerous gas at your home. please care this notification'
-        }
-
-    });
-
 
     getdeviceregisters($sdid).then(function (registers) {
 
-        sender.send(message, { registrationTokens: registers }, 10, function (err, response) {
-            if(err) return reject(err);
+        if (registers.length <=0){
+             //alert smart alarm only
+            var $response = {notify: 'smart alarm '+ $sdid,smartlarm : 'send alert to smart alarm is successfully'};
+            AlertOnlySmarAlarm($sdid,$response)
+             .then(function ($res) {
+                 return resolve($res);
+             }).catch(function (err) {
+                return reject(err);
+         });
 
-            getSmartAlarmLinks($sdid).then(function (links) {
+        }else {
+               // alert all
 
-                for (var i =0 ;i < links.length ; i++){
-                    AlertToSmartAlarm(links[i]).then(function () {
-                     console.log('update alert to true');
-                    }).catch(function (err) {
-                        console.error(err);
-                    })
-                }
+            AlertAll(registers,$sdid)
+                .then(function ($res) {
+                   return resolve($res);
+                }).catch(function (err) {
+                return reject(err);
+            });
 
-                resolve({notify : response , smartlarm : 'send alert to smart alarm is successfully'});
-
-            }).catch(function (err) {
-                reject(err);
-            })
-
-        });
+        }
 
     }).catch(function (err) {
         return reject(err);
@@ -108,6 +94,69 @@ return new promise(function (resolve, reject) {
 
 });
 
+
+};
+
+
+
+function AlertAll($registers,$sdid) {
+
+    return new promise(function (resolve, reject) {
+
+        var sender = new fcm.Sender(conf.fcm.ServerApiKey);
+
+        var message = new fcm.Message({
+            priority: 'high',
+            contentAvailable: true,
+            delayWhileIdle: true,
+            timeToLive: 3,
+            data : {
+                title : 'Homething Platform',
+                content : 'Gas sensor detect Dangerous gas',
+                subcontent : 'warning!! this notification is important. because your gas sensor detect Dangerous gas at your home. please care this notification'
+            }
+
+        });
+
+        sender.send(message, { registrationTokens: $registers }, 10, function (err, response) {
+            if(err) return reject(err);
+
+            var $responsemessage = {notify : response , smartlarm : 'send alert to smart alarm is successfully'};
+
+            AlertOnlySmarAlarm($sdid,$responsemessage)
+                .then(function ($res) {
+                    resolve($res);
+                }).catch(function (err) {
+                    reject(err);
+                });
+        });
+
+    });
+
+}
+
+
+function AlertOnlySmarAlarm($sdid,$response) {
+
+    return new promise(function (resolve, reject) {
+
+        getSmartAlarmLinks($sdid).then(function (links) {
+
+            for (var i =0 ;i < links.length ; i++){
+                AlertToSmartAlarm(links[i]).then(function () {
+                    console.log('update alert to true');
+                }).catch(function (err) {
+                    console.error(err);
+                })
+            }
+
+                resolve($response);
+
+        }).catch(function (err) {
+            reject(err);
+        })
+
+    });
 
 }
 

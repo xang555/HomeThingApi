@@ -253,7 +253,7 @@ router.post('/fcm',function (req, res, next) {
     firebasemanager.FcmNotification($sdid).then(function (result) {
         res.json({err:0,issue : result});
     }).catch(function (err) {
-        return res.status(403).json({err:1,issue : err});
+        return res.status(200).json({err:1,issue : err});
     });
 
 });

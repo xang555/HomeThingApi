@@ -27,7 +27,7 @@ function homethingConfig() {
     this.admin = {
 
         user : "admin",
-        passwd : "admin"
+        passwd : "homething2017"
 
     };
 
