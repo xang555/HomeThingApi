@@ -132,6 +132,17 @@ router.get('/admin/devices',expressJwt({secret: conf.jwt.AdminPrivateKey}),funct
 });
 
 
+/* verification token */
+
+router.get('/admin/verify',expressJwt({secret: conf.jwt.AdminPrivateKey}),function (req, res, next) {
+    if (!req.user.uadmin){
+        return res.status(401).json({err:401,msg : 'authentication failure'});
+    }else {
+        return res.json({err:0,msg : 'token is verified'});
+    }
+});
+
+
 /*--------------------------- user level --------------------------*/
 
 /* user sign up */
