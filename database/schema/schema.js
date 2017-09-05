@@ -9,7 +9,7 @@ var schema = mongose.Schema;
 var smartdevice = new schema( {
     sdid: String,
     type: Number,
-    nicname : String,
+    dname : String,
     dpasswd : String
 });
 

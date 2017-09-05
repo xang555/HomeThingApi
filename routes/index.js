@@ -22,16 +22,18 @@ router.post('/admin/device/add',expressJwt({secret: conf.jwt.AdminPrivateKey}), 
 
     var sdid = req.body.sdid;
     var  dtype = req.body.dtype;
-    var sharecode = req.body.sharecode;
+    var dpasswd = req.body.dpasswd;
 
-    if (! _.isEmpty(sdid) && ! _.isEmpty(dtype) && !_.isEmpty(sharecode)){
+    if (! _.isEmpty(sdid) && ! _.isEmpty(dtype) && !_.isEmpty(dpasswd)){
 
-        dbmanager.adminAddSmartDevice(sdid,sharecode,dtype)
+        var hashDpasswd = sha256(dpasswd);
+
+        dbmanager.adminAddSmartDevice(sdid,hashDpasswd.toString(),dtype)
             .then(function (docs) {
                 res.json({err : 0, message : 'add smart device successfully',qrcode : sdid});
             }).catch(function (err) {
                 console.error(err);
-            res.status(403).json({err : 1, message : 'add smart device unsuccessfully',qrcode : sdid});
+            res.status(403).json({err : 1, message : err});
             });
 
     }else {
@@ -47,16 +49,18 @@ router.post('/admin/login',function (req, res, next) {
     var  user = req.body.user;
     var passwd = req.body.passwd;
 
+    var hashuser = sha256(user);
+
     if (user === conf.admin.user && passwd === conf.admin.passwd){
 
         var payload = {
-            uadmin : sha256(user)
+            uadmin : hashuser.toString()
         }
 
         jwt.sign(payload,conf.jwt.AdminPrivateKey,{expiresIn:24*60*60},function (err, token) {
 
             if (err) {
-                return res.status(300).json({err : 1 , token : ""});
+                return res.status(500).json({err : 1 , token : ""});
             }
 
             res.status(200).json({err : 0 , token : token});
@@ -64,12 +68,12 @@ router.post('/admin/login',function (req, res, next) {
         });
 
     }else {
-        res.status(300).json({err : 1 , token : ""});
+        res.status(500).json({err : 1 , token : ""});
     }
 
 });
 
-router.post('/admin/device/delete',expressJwt({secret: conf.jwt.AdminPrivateKey}),function (req, res, next) {
+router.delete('/admin/device/delete',expressJwt({secret: conf.jwt.AdminPrivateKey}),function (req, res, next) {
 
     if (!req.user.uadmin) {
         return res.status(401).json({err:401,msg : 'authentication unsuccessfully'});
@@ -89,14 +93,14 @@ router.post('/admin/device/delete',expressJwt({secret: conf.jwt.AdminPrivateKey}
         }
 
     }).catch(function (err) {
-        res.status(403).json({err:1,msg:'delete smart device unsuccessfully',msgerr: err});
+        res.status(403).json({err:1,msg:err});
     });
 
 
 });
 
-
-router.post('/admin/device/update',expressJwt({secret: conf.jwt.AdminPrivateKey}),function (req, res, next) {
+/* admin update smartdevice type */
+router.post('/admin/device/update/type',expressJwt({secret: conf.jwt.AdminPrivateKey}),function (req, res, next) {
 
     if (!req.user.uadmin) {
         return res.status(401).json({err:401,msg : 'authentication unsuccessfully'});
@@ -105,14 +109,39 @@ router.post('/admin/device/update',expressJwt({secret: conf.jwt.AdminPrivateKey}
     var $sdid = req.body.sdid;
     var $dtype = req.body.dtype;
 
-    if (_.isEmpty($sdid) || _.isEmpty($dtype)) return res.status(403).json({err:1,msg : 'empty parameter'});
+    if (_.isEmpty($sdid)) return res.status(403).json({err:1,msg : 'no specify smartdevice'});
 
-    dbmanager.adminUpdateSmartDevice($sdid,$dtype).then(function (update) {
-        res.json({err : 0 , msg : 'update smart device successfully'});
+    dbmanager.adminUpdateSmartDeviceType($sdid,$dtype).then(function (update) {
+        res.json({err : 0 , msg : 'update smartdevice type successfully'});
     }).catch(function (err) {
-        res.status(403).json({err : 1 , msg : 'update smart device successfully',issue : err});
+        res.status(403).json({err : 1 , msg : 'update smartdevice type failure',issue : err});
     });
 
+});
+
+
+/* admin change password smartdevice */
+router.post('/admin/device/update/dpasswd',expressJwt({secret: conf.jwt.AdminPrivateKey}),function (req, res, next) {
+
+    if (!req.user.uadmin) {
+        return res.status(401).json({err:401,msg : 'authentication unsuccessfully'});
+    }
+
+    var $sdid = req.body.sdid;
+    var $newdpasswd = req.body.newdpasswd;
+    var $olddpasswd = req._body.olddpasswd;
+
+    if (_.isEmpty($sdid)) return res.status(403).json({err:1,msg : 'no specify smartdevice'});
+
+    dbmanager.adminChangePasswdSmartDevice($sdid,$olddpasswd,$newdpasswd).then(function (update) {
+        res.json({err : 0 , msg : 'change password smartdevice successfully'});
+    }).catch(function (err) {
+
+        if (err.ecode === conf.OLD_PASSWORD_NOT_MATCH){
+            return  res.status(403).json({err : conf.OLD_PASSWORD_NOT_MATCH , message : "old password not match"});
+        }
+        res.status(403).json({err : 1 , msg : 'change password smartdevice failure',issue : err});
+    });
 
 });
 

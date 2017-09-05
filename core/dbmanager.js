@@ -11,52 +11,60 @@ var config = require('../config')();
 function dbmanager() {
 
     /*admin add device*/
-    this.adminAddSmartDevice = function (sdid,$sharecode,dtype) {
+    this.adminAddSmartDevice = function ($sdid,$dpasswd,$dtype) {
 
         return new promise(function (resove, reject) {
 
-            var nicname = "";
-            switch (parseInt(dtype)){
-                case 0:
-                    nicname = "Smart Switch";
-                    break;
-                case 1 :
-                    nicname = "Temp and Humi";
-                    break;
-                case 2 :
-                    nicname = "Gas Sensor";
-                    break;
-                case 3 :
-                    nicname = "Smart Alarm";
-                    break;
+            var device = model.smartdevicemodel.findOne({sdid:$sdid});
 
-            }
+            device.exec().then(function (device) {
 
-            var docs = {
-                sdid : sdid,
-                type : dtype,
-                nicname : nicname,
-                sharecode : $sharecode
-            };
+             if (device) return reject({msg:"device already exist"});
 
-            var devices = model.smartdevicemodel;
+              if (parseInt($dtype) < 0 || parseInt($dtype) > 4) return reject({msg:"no device type"});
 
-            devices.update({sdid : sdid},docs,{upsert:true}).then(function (update) {
+                var dname = "";
+                switch (parseInt($dtype)){
+                    case 0:
+                        dname = "Smart Switch";
+                        break;
+                    case 1 :
+                        dname = "Temp and Humi";
+                        break;
+                    case 2 :
+                        dname = "Gas Sensor";
+                        break;
+                    case 3 :
+                        dname = "Smart Alarm";
+                        break;
+                    case 4 :
+                        dname = "Smart Plug";
+                        break;
 
-                console.log(update);
-
-                if (_.isEqual(update.ok,1)){
-                    firebasemanager.addDeviceStatusStruc(sdid,dtype)
-                        .then(function () {
-                            resove(docs);
-                        }).catch(function (err) {
-                        reject(err);
-                    });
-                }else
-                {
-                    reject({msg : 'add device fail'});
                 }
 
+                var docs = {
+                    sdid : $sdid,
+                    type : $dtype,
+                    dname : dname,
+                    dpasswd : $dpasswd
+                };
+
+                var devices = model.smartdevicemodel;
+
+                devices.update({sdid : $sdid},docs,{upsert:true}).then(function (update) {
+
+                    console.log(update);
+
+                    if (_.isEqual(update.ok,1)){
+                        resove(docs);
+                    }else {
+                        reject({msg : 'add device fail'});
+                    }
+
+                }).catch(function (err) {
+                    reject(err);
+                });
 
             }).catch(function (err) {
                 reject(err);
@@ -251,43 +259,41 @@ function dbmanager() {
     };
 
 
-    /* admin update smart device */
-    this.adminUpdateSmartDevice = function ($sdid,$type) {
+    /* admin update smart device type*/
+    this.adminUpdateSmartDeviceType = function ($sdid, $dtype) {
 
         return new promise(function (resolve, reject) {
+
+            if (parseInt($dtype) < 0 || parseInt($dtype) > 4) return reject({msg:"no device type"});
+
             var smartdevice = model.smartdevicemodel;
 
-            var nicname = "";
-            switch (parseInt($type)){
+            var dname = "";
+            switch (parseInt($dtype)){
                 case 0:
-                    nicname = "Smart Switch";
+                    dname = "Smart Switch";
                     break;
                 case 1 :
-                    nicname = "Temp and Humi";
+                    dname = "Temp and Humi";
                     break;
                 case 2 :
-                    nicname = "Gas Sensor";
+                    dname = "Gas Sensor";
                     break;
                 case 3 :
-                    nicname = "Smart Alarm";
+                    dname = "Smart Alarm";
                     break;
+                case 4 :
+                    dname = "Smart Plug"
 
             }
 
-            smartdevice.update({sdid : $sdid},{$set:{type:$type,nicname:nicname}}).then(function (update) {
+            smartdevice.update({sdid : $sdid},{$set:{type:$dtype,dname:dname}}).then(function (update) {
 
                 if (_.isEqual(update.ok,1)) {
-
-                    firebasemanager.addDeviceStatusStruc($sdid,$type).then(function () {
-                        resolve(update);
-                    }).catch(function (err) {
-                        reject(err);
-                    });
-
+                    resolve(update);
                 }else {
                     reject({msg : 'update device fail'});
                 }
-
 
             }).catch(function (err) {
                reject(err);
@@ -296,6 +302,40 @@ function dbmanager() {
         });
 
     };
+
+
+    /* admin change password smartdevice */
+    this.adminChangePasswdSmartDevice = function ($sdid,$olddpasswd,$newdpasswd) {
+
+        return new promise(function (resolve, reject) {
+
+            var smartdevice = model.smartdevicemodel.findOne({sdid: $sdid});
+
+            smartdevice.exec().then(function (device) {
+
+                if (!_.isEqual(device.dpasswd,$olddpasswd)) return reject({ecode : config.OLD_PASSWORD_NOT_MATCH});
+
+                var smartdevice = model.smartdevicemodel;
+                smartdevice.update({sdid : $sdid},{$set:{dpasswd : $newdpasswd}}).then(function (update) {
+
+                    if (_.isEqual(update.ok,1)) {
+                        resolve(update);
+                    }else {
+                        reject({msg : 'change password fail'});
+                    }
+
+                }).catch(function (err) {
+                    reject(err);
+                });
+
+            }).catch(function (err) {
+                reject(err);
+            });
+
+        });
+
+    };
+
 
     /*admin lists smart devices*/
     this.adminListSmartDevices = function () {

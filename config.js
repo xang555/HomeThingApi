@@ -21,7 +21,7 @@ function homethingConfig() {
     this.admin = {
 
         user : "admin",
-        passwd : "homething2017"
+        passwd : "iloveiot"
 
     };
 
@@ -154,6 +154,8 @@ function homethingConfig() {
     };
 
     this.UNAME_AND_EMAIL_EXIT = 4000;
+    this.OLD_PASSWORD_NOT_MATCH = 1200;
+
 }
 
 
