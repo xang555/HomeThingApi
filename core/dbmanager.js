@@ -135,12 +135,12 @@ function dbmanager() {
     };
 
     /* user add smart device*/
-    this.UserAddSmartDevice = function ($sdid,$sharecode,$uid) {
+    this.UserAddSmartDevice = function ($sdid,$dpasswd,$uid) {
 
         return new promise(function (resolve, reject) {
 
-            var devices = model.smartdevicemodel.findOne({sdid : $sdid,dpasswd : $sharecode});
-            devices.select('sdid type nicname dpasswd');
+            var devices = model.smartdevicemodel.findOne({sdid : $sdid,dpasswd : $dpasswd});
+            devices.select('sdid type dname dpasswd');
             devices.exec().then(function (device) {
 
                 if (!device) return reject({error : "device is null "});

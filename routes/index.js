@@ -129,11 +129,14 @@ router.post('/admin/device/update/dpasswd',expressJwt({secret: conf.jwt.AdminPri
 
     var $sdid = req.body.sdid;
     var $newdpasswd = req.body.newdpasswd;
-    var $olddpasswd = req._body.olddpasswd;
+    var $olddpasswd = req.body.olddpasswd;
 
     if (_.isEmpty($sdid)) return res.status(403).json({err:1,msg : 'no specify smartdevice'});
 
-    dbmanager.adminChangePasswdSmartDevice($sdid,$olddpasswd,$newdpasswd).then(function (update) {
+    var $hashnewpasswd = sha256($newdpasswd);
+    var $hasholdpasswd = sha256($olddpasswd);
+
+    dbmanager.adminChangePasswdSmartDevice($sdid,$hasholdpasswd.toString(),$hashnewpasswd.toString()).then(function (update) {
         res.json({err : 0 , msg : 'change password smartdevice successfully'});
     }).catch(function (err) {
 
@@ -265,13 +268,15 @@ router.post('/app/device/add',expressJwt({secret: conf.jwt.userPrivateKey}),func
     var $sdid = req.body.sdid;
     var $dpasswd = req.body.dpasswd;
 
-    if (_.isEmpty($sdid) || _.isEmpty($dpasswd)) return res.status(200).json({err : 404 , msg : 'empty device identify'});
+    var $hashdpasswd = sha256($dpasswd);
+
+    if (_.isEmpty($sdid) || _.isEmpty($hashdpasswd.toString())) return res.status(200).json({err : 404 , msg : 'empty device identify'});
 
     if (!req.user) {
         return res.json({err:401,msg : 'authentication unsuccessfully'});
     }
 
-    dbmanager.UserAddSmartDevice($sdid,$dpasswd,req.user.uid).then(function (device) {
+    dbmanager.UserAddSmartDevice($sdid,$hashdpasswd.toString(),req.user.uid).then(function (device) {
         res.json({err : 200, device : device});
     }).catch(function (err) {
        if (err.errcode === 400) return res.status(200).json({err : 400 , msg : err});
@@ -301,7 +306,7 @@ router.post('/fcm',function (req, res, next) {
 
 
 /* user delete smart device */
-router.post('/user/device/delete',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
+router.delete('/user/device/delete',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
 
     if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
 
