@@ -6,6 +6,7 @@ var promise = require('bluebird');
 var model = require('../database/model/homethingModel');
 var firebasemanager = require('../core/firebase/firebasemanager')();
 var _ = require('lodash');
+var config = require('../config')();
 
 function dbmanager() {
 
@@ -67,29 +68,40 @@ function dbmanager() {
 
 
     /*user sing up*/
-    this.userSigup = function ($uid, $uname, $lname, $fname, $email) {
+    this.userSigup = function ($uid, $uname,$password, $lname, $fname, $email) {
 
         return new promise(function (resolve, reject) {
 
-            var docs = {
+         var user = model.usersmodel.findOne({$or:[{uname: $uname},{email:$email}]});
 
-                uid: $uid,
-                uname: $uname,
-                fname: $fname,
-                lname: $lname,
-                email: $email,
-                device: []
+             user.exec().then(function (user) {
 
-            }
+                 if (user) return reject({ecode: config.UNAME_AND_EMAIL_EXIT});
 
-            var users = new model.usersmodel(docs);
+                 var docs = {
 
-            users.save().then(function (docs) {
-                resolve(docs);
-            }).catch(function (err) {
-                reject(err);
-            });
+                     uid: $uid,
+                     uname: $uname,
+                     passwd: $password,
+                     fname: $fname,
+                     lname: $lname,
+                     email: $email,
+                     device: []
 
+                 }
+
+                 var users = new model.usersmodel(docs);
+
+                 users.save().then(function (docs) {
+                     resolve(docs);
+                 }).catch(function (err) {
+                     reject(err);
+                 });
+
+
+             }).catch(function (err) {
+                 reject(err);
+             });
 
         });
 
@@ -98,18 +110,17 @@ function dbmanager() {
 
 
     /*user login*/
-    this.userlogin = function ($uid) {
+    this.userlogin = function ($ure,$hashpasswd) {
 
         return new promise(function (resolve, reject) {
 
-            var users = model.usersmodel.findOne({uid : $uid});
+            var users = model.usersmodel.findOne({passwd:$hashpasswd,$or:[{uname:$ure},{email:$ure}]});
 
             users.exec().then(function (docs) {
                 resolve(docs);
             }).catch(function (err) {
                 reject(err);
             });
-
 
         });
 
@@ -120,8 +131,8 @@ function dbmanager() {
 
         return new promise(function (resolve, reject) {
 
-            var devices = model.smartdevicemodel.findOne({sdid : $sdid,sharecode : $sharecode});
-            devices.select('sdid type nicname sharecode');
+            var devices = model.smartdevicemodel.findOne({sdid : $sdid,dpasswd : $sharecode});
+            devices.select('sdid type nicname dpasswd');
             devices.exec().then(function (device) {
 
                 if (!device) return reject({error : "device is null "});

@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === 'production'){
  connectionUri+=conf.database.product.url+":"+conf.database.product.port+"/"+conf.database.product.dbname;
 }
 
-mongoose.connect(connectionUri).then(function () {
+mongoose.connect(connectionUri,{useMongoClient: true}).then(function () {
     console.log('connected database!...');
 }).catch(function (err) {
    console.error(err);

@@ -2,12 +2,6 @@
  * Created by xang on 20/04/2017.
  */
 
-
-
-exports.url = "mongodb://localhost/homething";
-exports.user = "admin";
-exports.passwd = "55765567";
-
 function homethingConfig() {
 
 
@@ -159,7 +153,7 @@ function homethingConfig() {
 
     };
 
-
+    this.UNAME_AND_EMAIL_EXIT = 4000;
 }
 
 

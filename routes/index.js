@@ -9,7 +9,7 @@ var expressJwt = require('express-jwt');
 var dbmanager = require('../core/dbmanager')();
 var _ = require('lodash');
 var firebasemanager = require('../core/firebase/firebasemanager')();
-
+var sha256 = require('crypto-js/sha256');
 
 /*------------------------------- admin level ---------------------------*/
 
@@ -50,7 +50,7 @@ router.post('/admin/login',function (req, res, next) {
     if (user === conf.admin.user && passwd === conf.admin.passwd){
 
         var payload = {
-            uadmin : user
+            uadmin : sha256(user)
         }
 
         jwt.sign(payload,conf.jwt.AdminPrivateKey,{expiresIn:24*60*60},function (err, token) {
@@ -152,21 +152,26 @@ router.post('/user/singup',function (req, res, next) {
     var lname = req.body.lname;
     var fname = req.body.fname;
     var email = req.body.email;
-    var uid = req.body.uid;
+    var password = req.body.passwd;
 
-    if (! _.isEmpty(uname) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email) && ! _.isEmpty(uid)){
+    if (! _.isEmpty(uname) && ! _.isEmpty(lname) && ! _.isEmpty(fname) && ! _.isEmpty(email)){
 
+        var uid = sha256(uname + "-"+lname+"-"+fname+"-"+email);
+        var hashPassword = sha256(password);
+        var hashure = sha256(uname);
 
-        dbmanager.userSigup(uid,uname,lname,fname,email)
+        dbmanager.userSigup(uid.toString(),uname,hashPassword.toString(),lname,fname,email)
             .then(function (docs) {
 
                 var payload = {
-                    uid : uid
+                    uid : uid.toString(),
+                    uname : hashure.toString(),
+                    passwd : hashPassword.toString()
                 }
 
                 jwt.sign(payload,conf.jwt.userPrivateKey,{expiresIn:24*60*60},function (err, token) {
 
-                    if (err) res.status(401).json({err:1,token:""});
+                    if (err)return res.status(401).json({err:1,token:""});
 
                     res.json({err:0,token:token});
 
@@ -175,6 +180,9 @@ router.post('/user/singup',function (req, res, next) {
 
             }).catch(function (err) {
             console.error(err);
+            if (err.ecode === conf.UNAME_AND_EMAIL_EXIT){
+                return res.status(401).json({err:conf.UNAME_AND_EMAIL_EXIT,token:""});
+            }
             res.status(401).json({err:1,token:""});
         });
 
@@ -189,16 +197,20 @@ router.post('/user/singup',function (req, res, next) {
 /* user login */
 router.post('/user/login',function (req, res, next) {
 
-    var uid = req.body.uid;
+    var ure = req.body.ure; // username or email
+    var passwd = req.body.passwd; // password plain text
 
-    dbmanager.userlogin(uid).then(function (user) {
+    var hashpassword = sha256(passwd);
+    var hashure = sha256(ure);
 
+    dbmanager.userlogin(ure,hashpassword.toString()).then(function (user) {
         console.log(user);
-
-        if (!user) res.status(401).json({err:1,token:""});
+        if (!user) return res.status(401).json({err:1,token:""});
 
         var payload = {
-            uid : uid
+            uid: user.uid,
+            uname : hashure.toString(),
+            passwd : hashpassword.toString()
         }
 
         jwt.sign(payload,conf.jwt.userPrivateKey,{expiresIn:24*60*60},function (err, token) {
@@ -222,15 +234,15 @@ router.post('/user/login',function (req, res, next) {
 router.post('/app/device/add',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
 
     var $sdid = req.body.sdid;
-    var $sharecode = req.body.sharecode;
+    var $dpasswd = req.body.dpasswd;
 
-    if (_.isEmpty($sdid) || _.isEmpty($sharecode)) return res.status(200).json({err : 404 , msg : 'empty device identify'});
+    if (_.isEmpty($sdid) || _.isEmpty($dpasswd)) return res.status(200).json({err : 404 , msg : 'empty device identify'});
 
-    if (!req.user.uid) {
+    if (!req.user) {
         return res.json({err:401,msg : 'authentication unsuccessfully'});
     }
 
-    dbmanager.UserAddSmartDevice($sdid,$sharecode,req.user.uid).then(function (device) {
+    dbmanager.UserAddSmartDevice($sdid,$dpasswd,req.user.uid).then(function (device) {
         res.json({err : 200, device : device});
     }).catch(function (err) {
        if (err.errcode === 400) return res.status(200).json({err : 400 , msg : err});
