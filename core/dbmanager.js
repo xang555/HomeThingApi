@@ -219,6 +219,7 @@ function dbmanager() {
     };
 
 
+    /* user update smart device */
     this.userUpdateSmartDevice = function ($uid,$sdid, $dname) {
 
       return new promise(function (resolve, reject) {
@@ -242,6 +243,7 @@ function dbmanager() {
 
     };
 
+    /*-------------------- admin ----------------------------*/
 
     /* admin delete smart device */
     this.adminDeleteSmartDevice = function ($sdid) {

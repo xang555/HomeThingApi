@@ -373,5 +373,13 @@ router.get('/user/profile',expressJwt({secret: conf.jwt.userPrivateKey}),functio
 });
 
 
+/*change password*/
+router.post('/user/change/passwd',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
+
+    if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
+
+
+
+});
 
 module.exports = router;
