@@ -279,7 +279,7 @@ router.post('/app/device/add',expressJwt({secret: conf.jwt.userPrivateKey}),func
     dbmanager.UserAddSmartDevice($sdid,$hashdpasswd.toString(),req.user.uid).then(function (device) {
         res.json({err : 200, device : device});
     }).catch(function (err) {
-       if (err.errcode === 400) return res.status(200).json({err : 400 , msg : err});
+       if (err.errcode === 400) return res.status(200).json({err : 400 , msg : err}); //device already exit
         res.status(200).json({err : 403 , msg : err});
     });
 
@@ -329,11 +329,11 @@ router.post('/user/device/update',expressJwt({secret: conf.jwt.userPrivateKey}),
     if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
 
     var $sdid = req.body.sdid;
-    var $nicname = req.body.dname;
+    var $dname = req.body.dname;
 
-    if (_.isEmpty($sdid) || _.isEmpty($nicname)) return res.status(200).json({err : 1 , msg : 'empty device identify'});
+    if (_.isEmpty($sdid) || _.isEmpty($dname)) return res.status(200).json({err : 1 , msg : 'empty device identify'});
 
-     dbmanager.userUpdateSmartDevice(req.user.uid,$sdid,$nicname)
+     dbmanager.userUpdateSmartDevice(req.user.uid,$sdid,$dname)
          .then(function (update) {
              console.log(update);
              res.json({err : 0, msg : 'update device success'});
@@ -344,7 +344,7 @@ router.post('/user/device/update',expressJwt({secret: conf.jwt.userPrivateKey}),
 });
 
 /* get list of smart device for some users */
-router.get('/devices',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
+router.get('/user/devices',expressJwt({secret: conf.jwt.userPrivateKey}),function (req, res, next) {
 
     if (!req.user.uid) return res.status(401).json({err:1,msg:'authentication fail'});
 

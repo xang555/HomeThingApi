@@ -225,10 +225,12 @@ function dbmanager() {
 
           var user = model.usersmodel;
 
-          user.update({"uid" : $uid,"device.sdid" : $sdid},{"$set" : {"device.$.nicname":$dname}},function (err, update) {
+          user.update({"uid" : $uid,"device.sdid" : $sdid},{"$set" : {"device.$.dname":$dname}},function (err, update) {
+
+              console.log(update);
 
               if (err) return reject(err);
-              if (update.nModified === 0) return reject({errmsg : 'Smart device not fond'});
+              if (update.nModified === 0) return reject({errmsg : 'no modify Smart device'});
 
               if (_.isEqual(update.ok,1)) {
                   resolve(update);
